@@ -5,6 +5,7 @@ sudo apt-get upgrade
 sudo apt install npm
 npm install
 npm install pm2@latest -g
+sudo apt install redis-server
 sudo apt-get install authbind
 sudo apt install redis-server
 sudo touch /etc/authbind/byport/80
