@@ -5,7 +5,7 @@ npm install
 npm install pm2@latest -g
 sudo apt update
 sudo apt install redis-server
-echo supervised systemd /etc/redis/redis.conf
+echo "supervised systemd\nbind 127.0.0.1" > /etc/redis/redis.conf
 sudo systemctl restart redis.service
 sudo apt-get install authbind
 sudo touch /etc/authbind/byport/80
