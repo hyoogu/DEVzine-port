@@ -1,5 +1,6 @@
 const { User } = require('../Models/Users');
 const { VerifiedEmail } = require('../Models/Verifiedemails');
+const { Subscriber } = require('../Models/Subscribers');
 const { Contribution } = require('../Models/Contributions');
 const {
   setNewCacheForContributions,
@@ -30,6 +31,12 @@ module.exports = {
     if (!tempUser) {
       return res.status(401).send({ message: 'Email unverified' });
     }
+
+    await Subscriber.findOne({ subscriber_email: user_email }).then(data => {
+      if (data) {
+        user_info.subscribed = true;
+      }
+    });
 
     try {
       const user_password = await bcrypt.hash(req.body.user_password, 10);
@@ -132,4 +139,34 @@ module.exports = {
       res.status(500).send(err);
     }
   },
+
+  updatePassword: async (req, res) => {
+    
+    let { user_email, user_password, authcode } = req.body;
+
+    try {
+      const user = await User.findOne({ user_email });
+
+      if (!user.authcode) {
+        return res.status(404).json({ 
+          message: 'Email unverified' 
+        });
+      }
+
+      if (user.authcode !== authcode) {
+        return res.status(401).json({
+          message: 'Invalid authcode'
+        });
+      }
+
+      user_password = await bcrypt.hash(req.body.user_password, 10);
+      await User.updateOne({ user_email }, { user_password });
+      
+      return res.status(200).json({
+        message: 'Password changed'
+      })
+    } catch (err) {
+      res.status(500).send(err);
+    }
+  }
 };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { signinUser } from '../../../_actions/user_actions';
 import TextInputGenderRequired from './TextInputGenderRequired';
@@ -16,6 +16,20 @@ function SigninModal({ ModalOpen, setModalOpen }) {
     [Email, setEmail, '이메일 입력', 'email', '30'],
     [Password, setPassword, '비밀번호 입력', 'password', '20'],
   ];
+
+  // 모달오버레이에서 스크롤 방지
+  useEffect(() => {
+    document.body.style.cssText = `
+      position: fixed; 
+      top: -${window.scrollY}px;
+      overflow-y: scroll;
+      width: 100%;`;
+    return () => {
+      const scrollY = document.body.style.top;
+      document.body.style.cssText = '';
+      window.scrollTo(0, parseInt(scrollY || '0', 10) * -1);
+    };
+  }, []);
 
   async function postHandler(e) {
     let body = {
@@ -35,6 +49,12 @@ function SigninModal({ ModalOpen, setModalOpen }) {
         setAlertOpen(true);
       });
   }
+
+  const onKeyPress = e => {
+    if (e.key === 'Enter') {
+      postHandler();
+    }
+  };
 
   function closeModal() {
     setAlertOpen(false);
@@ -62,6 +82,7 @@ function SigninModal({ ModalOpen, setModalOpen }) {
             />
           </svg>
         </Link>
+        <span className="blank sm-hidden" />
         {requiredTextInputData.map((el, idx) => {
           return (
             <TextInputGenderRequired
@@ -71,6 +92,7 @@ function SigninModal({ ModalOpen, setModalOpen }) {
               placeholder={el[2]}
               type={el[3]}
               maxLength={el[4]}
+              onKeyPress={onKeyPress}
             />
           );
         })}
@@ -86,10 +108,7 @@ function SigninModal({ ModalOpen, setModalOpen }) {
             subject={`회원가입`}
             color={`#191A20`}
             backgroundColor={`#FFDD14`}
-            onClickHandle={() => {
-              setModalOpen(false);
-              window.location.href = '/signup';
-            }}
+            onClickHandle={() => (window.location.href = '/signup')}
           />
         </span>
         <span className="sm-hidden">
@@ -102,6 +121,20 @@ function SigninModal({ ModalOpen, setModalOpen }) {
             />
           </Link>
         </span>
+        <div className="passwordbtn">
+          비밀번호를 잊어버리셨나요?
+          <br />
+          <span className="sm-only">
+            <span onClick={() => (window.location.href = '/password')}>
+              비밀번호 재설정
+            </span>
+          </span>
+          <span className="sm-hidden">
+            <Link to="/password">
+              <span onClick={() => setModalOpen(false)}>비밀번호 재설정</span>
+            </Link>
+          </span>
+        </div>
       </div>
       <AlertModal
         open={AlertOpen}

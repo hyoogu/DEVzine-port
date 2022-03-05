@@ -41,6 +41,8 @@ import Unsubscribe from './components/Email/Unsubscribe';
 import Error from './components/Common/Error/Error';
 import Loading from './components/Common/Loading/Loading';
 import Admin from './pages/Admin';
+import FAQ from './pages/FAQ';
+import Password from './pages/Password';
 
 function App() {
   return (
@@ -92,6 +94,12 @@ function App() {
           </Route>
           <Route path="/admin">
             <Admin />
+          </Route>
+          <Route path="/faq">
+            <FAQ />
+          </Route>
+          <Route path="/password">
+            <Password />
           </Route>
 
           {/* 잘못된 url 정규식을 방문했을 때 */}

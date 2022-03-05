@@ -6,6 +6,8 @@ const smtpTransport = require('nodemailer-smtp-transport');
 const inlineCss = require('nodemailer-juice');
 const nodemailer = require('nodemailer');
 const ejs = require('ejs');
+const fs = require('fs');
+
 require('dotenv').config();
 
 const transporter = nodemailer.createTransport(
@@ -23,7 +25,6 @@ transporter.use('compile', inlineCss());
 
 const sendMailToSubscribers = async () => {
   const subscribers = await Subscriber.find({});
-
   // articles 어제 06시 이후에 크롤링 된 기사 가져오기
   const getRange = new Date().getDay() === 0 ? 2 : 1;
   const articles = await Article.find({
@@ -96,9 +97,8 @@ const sendMailToSubscribers = async () => {
     },
   );
 
-  console.log(contribution);
-
   const date = new Date();
+  date.setHours(date.getHours() + 9);
   const week = ['일', '월', '화', '수', '목', '금', '토'];
   const formatDate = `${date.getFullYear()}/${
     date.getMonth() + 1
@@ -113,7 +113,7 @@ const sendMailToSubscribers = async () => {
     ? contributionUserInfo.user_name
     : 'anonymous';
 
-  subscribers.map(async subscriber => {
+  subscribers.map(async (subscriber, index) => {
     const userEmail = subscriber.subscriber_email;
     const user = await User.findOne({
       user_email: userEmail,
@@ -139,22 +139,32 @@ const sendMailToSubscribers = async () => {
       },
     );
 
-    await transporter.sendMail(
-      {
-        from: 'DEVzine:port <devzineport@gmail.com>',
-        to: userEmail,
-        subject: `🗞${formatDate} 최신 IT 소식`,
-        html: newsLetter,
-      },
-      (err, info) => {
-        if (err) {
-          console.log(err);
-        } else {
-          console.log('Email send: ' + info.response);
-          transporter.close();
-        }
-      },
-    );
+    const logDir = __dirname + '/emailLog.txt';
+    if (!fs.existsSync(logDir)) {
+      fs.writeFileSync(logDir, 'EMAIL LOGGER\n\n');
+    }
+
+    setTimeout(async() => {
+      await transporter.sendMail(
+        {
+          from: 'DEVzine:port <devzineport@gmail.com>',
+          to: userEmail,
+          subject: `🗞${formatDate} 최신 IT 소식`,
+          html: newsLetter,
+        },
+        (err, info) => {
+          if (err) {
+            // console.log(err);
+            fs.appendFileSync(logDir, `${err} \nUser Email: ${userEmail}\n\n`)
+          } else {
+            // console.log('Email send: ' + info.response);
+            // console.log('Email send: ' + userEmail);
+            fs.appendFileSync(logDir, `Email sent: ${info.response} \nUser Email: ${userEmail}\n\n`)
+            transporter.close();
+          }
+        },
+      );
+    }, 500 * index);
   });
 };
 
