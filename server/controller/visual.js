@@ -25,7 +25,7 @@ module.exports = {
         stat_content: data,
       });
 
-      redisClient.setex('visualsActivated', 60 * 60 * 12, JSON.stringify(data));
+      await redisClient.SETEX('visualsActivated', 60 * 60 * 12, JSON.stringify(data));
       return res.status(200).json({
         data,
         message: 'success',

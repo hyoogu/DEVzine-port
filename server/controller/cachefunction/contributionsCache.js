@@ -111,39 +111,22 @@ const checkCacheForOneContribution = async id => {
 };
 
 const insertCacheForOneContribution = async (id, data) => {
-  redisClient.hGetAll('allContributions', async (err, contributions) => {
-    if (err) {
-      console.log(err);
-    }
+  const contributions = await redisClient.hGetAll('allContributions')
+  if (Object.values(contributions).length === 0) {
+    const contributionListFromDB = await getAllConfirmedContributions();
+    await setNewCacheForContributions(contributionListFromDB);
+  }
 
-    // cache miss
-    if (!contributions) {
-      const contributionListFromDB = await getAllConfirmedContributions();
-      await setNewCacheForContributions(contributionListFromDB);
-    }
-
-    // cache hit
-    await redisClient.hSet('allContributions', id, JSON.stringify(data));
-  });
+  await redisClient.hSet('allContributions', id, JSON.stringify(data));
 };
 
 const deleteCacheForOneContribution = async (id, data) => {
-  redisClient.hGetAll('allContributions', async (err, contributions) => {
-    if (err) {
-      console.log(err);
-    }
-
-    // cache miss
-    if (!contributions) {
-      const contributionListFromDB = await getAllConfirmedContributions();
-      await setNewCacheForContributions(contributionListFromDB);
-    }
-
-    // cache hit
-    if (contributions) {
-      await redisClient.hdel('allContributions', id);
-    }
-  });
+  const contributions = await redisClient.hGetAll('allContributions')
+  if (Object.values(contributions).length === 0) {
+    const contributionListFromDB = await getAllConfirmedContributions();
+    await setNewCacheForContributions(contributionListFromDB);
+  }
+  await redisClient.hdel('allContributions', id);
 };
 
 const updateContributionHit = async id => {
@@ -157,19 +140,16 @@ const updateContributionHit = async id => {
           hit: 1,
         },
       },
-      (err, data) => {
+      async (err, data) => {
         if (err) {
           throw err;
         }
-        redisClient.hGet('allContributions', id, async (err, data) => {
-          if (err) {
-            throw err;
-          }
-          let temp = JSON.parse(data);
-          temp.hit += 1;
-          redisClient.hmset('allContributions', id, JSON.stringify(temp));
-          return true;
-        });
+        const contribution = await redisClient.hGet('allContributions', id)
+        
+        let temp = JSON.parse(contribution);
+        temp.hit += 1;
+        redisClient.HMSET('allContributions', id, JSON.stringify(temp));
+        return true;
       },
     );
   } catch (err) {
