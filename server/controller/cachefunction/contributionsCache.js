@@ -64,49 +64,49 @@ const setNewCacheForContributions = async contributions => {
 
 const checkCacheForContributions = async () => {
 
-  const contributions = await redisClient.hGetAll('allContributions')
+  // const contributions = await redisClient.hGetAll('allContributions')
 
-  if (Object.values(contributions).length === 0) {
+  // if (Object.values(contributions).length === 0) {
     const contributionListFromDB = await getAllConfirmedContributions();
-    await setNewCacheForContributions(contributionListFromDB);
+    // await setNewCacheForContributions(contributionListFromDB);
     return{
       contributionData: contributionListFromDB,
       contributionSource: 'DB',
     };
-  }
+  // }
 
-  let contributionData = [];
-  for (let key in contributions) {
-    contributionData.push(JSON.parse(contributions[key]));
-  }
-  contributionData.sort((a, b) => {
-    return new Date(b.contribution_date) - new Date(a.contribution_date);
-  });
-  return{
-    contributionData,
-    contributionSource: 'cache',
-  };
+  // let contributionData = [];
+  // for (let key in contributions) {
+  //   contributionData.push(JSON.parse(contributions[key]));
+  // }
+  // contributionData.sort((a, b) => {
+  //   return new Date(b.contribution_date) - new Date(a.contribution_date);
+  // });
+  // return{
+  //   contributionData,
+  //   contributionSource: 'cache',
+  // };
 
 };
 
 const checkCacheForOneContribution = async id => {
 
-  const contributions = await redisClient.hGetAll('allContributions')
-  if (Object.values(contributions).length === 0) {
-    const contributionListFromDB = await getAllConfirmedContributions();
-    await setNewCacheForContributions(contributionListFromDB);
-  }
+  // const contributions = await redisClient.hGetAll('allContributions')
+  // if (Object.values(contributions).length === 0) {
+    // const contributionListFromDB = await getAllConfirmedContributions();
+    // await setNewCacheForContributions(contributionListFromDB);
+  // }
 
-  const singleContribution = await redisClient.hGet('allContributions', id);
+  // const singleContribution = await redisClient.hGet('allContributions', id);
   
-  if (!singleContribution) {
+  // if (!singleContribution) {
     return 'Not found';
-  }
+  // }
 
-  return{
-    data: JSON.parse(singleContribution),
-    source: 'cache',
-  };
+  // return{
+  //   data: JSON.parse(singleContribution),
+  //   source: 'cache',
+  // };
 
 };
 
@@ -144,11 +144,11 @@ const updateContributionHit = async id => {
         if (err) {
           throw err;
         }
-        const contribution = await redisClient.hGet('allContributions', id)
+        // const contribution = await redisClient.hGet('allContributions', id)
         
-        let temp = JSON.parse(contribution);
-        temp.hit += 1;
-        redisClient.HMSET('allContributions', id, JSON.stringify(temp));
+        // let temp = JSON.parse(contribution);
+        // temp.hit += 1;
+        // redisClient.HMSET('allContributions', id, JSON.stringify(temp));
         return true;
       },
     );

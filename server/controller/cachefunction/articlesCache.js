@@ -21,7 +21,7 @@ const getArticlesPastTwoWeeks = async () => {
 };
 
 const setNewCacheForArticles = async articles => {
-  await redisClient.del('recentArticles');
+  await redisClient.DEL('recentArticles');
 
   for (let i = 0; i < articles.length; i++) {
     let id = articles[i].article_id;
@@ -30,40 +30,40 @@ const setNewCacheForArticles = async articles => {
 };
 
 const checkCacheForArticles = async () => {
-  const articles = await redisClient.hGetAll('recentArticles')
-  if (Object.values(articles).length === 0) {
+  // const articles = await redisClient.hGetAll('recentArticles')
+  // if (Object.values(articles).length === 0) {
     const articlesFromDB = await getArticlesPastTwoWeeks();
-    await setNewCacheForArticles(articlesFromDB);
+    // await setNewCacheForArticles(articlesFromDB);
     return{
       articleData: articlesFromDB,
       articleSource: 'DB',
     };
-  }
-  let articleData = [];
-  for (let key in articles) {
-    articleData.push(JSON.parse(articles[key]));
-  }
-  articleData.sort((a, b) => {
-    return new Date(b.article_date) - new Date(a.article_date);
-  });
-  return{
-    articleData,
-    articleSource: 'cache',
-  };
+  // }
+  // let articleData = [];
+  // for (let key in articles) {
+  //   articleData.push(JSON.parse(articles[key]));
+  // }
+  // articleData.sort((a, b) => {
+  //   return new Date(b.article_date) - new Date(a.article_date);
+  // });
+  // return{
+  //   articleData,
+  //   articleSource: 'cache',
+  // };
 };
 
 const checkCacheForOneArticle = async id => {
 
-  const articles = await redisClient.hGetAll('recentArticles');
+  // const articles = await redisClient.hGetAll('recentArticles');
   
-  if (Object.values(articles).length === 0) {
-    const articlesFromDB = await getArticlesPastTwoWeeks();
-    await setNewCacheForArticles(articlesFromDB);
-  }
+  // if (Object.values(articles).length === 0) {
+    // const articlesFromDB = await getArticlesPastTwoWeeks();
+    // await setNewCacheForArticles(articlesFromDB);
+  // }
       
-  const singleArticle = await redisClient.hGet('recentArticles', id);
+  // const singleArticle = await redisClient.hGet('recentArticles', id);
 
-  if (!singleArticle) {
+  // if (!singleArticle) {
     const articleFromDB = await Article.findOne(
       {
         article_id: id,
@@ -76,7 +76,7 @@ const checkCacheForOneArticle = async id => {
       data: articleFromDB,
       source: 'DB',
     };
-  }
+  // }
 
   return{
     data: JSON.parse(singleArticle),
@@ -113,7 +113,7 @@ const updateArticleHit = async id => {
               console.log(err);
             }
 
-            redisClient.HMSET('recentArticles', id, JSON.stringify(data));
+            // redisClient.HMSET('recentArticles', id, JSON.stringify(data));
           },
         );
       },
